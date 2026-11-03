@@ -13,6 +13,7 @@ const ChatSchema = new mongoose.Schema(
         ref: "Message",
       },
     ],
+    lastMessageAt: { type: Date },
   },
   { timestamps: true }
 );

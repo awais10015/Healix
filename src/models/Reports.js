@@ -6,6 +6,13 @@ const reportSchema = new mongoose.Schema(
     patientId: String,
     testName: String,
     testResult: String,
+    status: {
+      type: String,
+      enum: ["pending", "final"],
+      default: "final",
+    },
+    submittedBy: String,
+    notes: String,
   },
   { timestamps: true }
 );

@@ -1,151 +1,66 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import MarketingAuthCta from "@/components/MarketingAuthCta";
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+function scrollReveal(selector, vars = {}) {
+  gsap.from(selector, {
+    scrollTrigger: {
+      trigger: selector,
+      start: "top 85%",
+      once: true,
+    },
+    opacity: 0,
+    y: vars.y ?? 80,
+    duration: vars.duration ?? 0.6,
+    delay: vars.delay ?? 0,
+    immediateRender: false,
+    ease: "power2.out",
+  });
+}
+
 const HomePage = () => {
-  gsap.registerPlugin(ScrollTrigger);
+  const pageRef = useRef(null);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
     const ctx = gsap.context(() => {
       gsap.from(".hero", {
-        scrollTrigger: {
-          trigger: ".hero",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-     
-        },
         opacity: 0,
-        y: 300,
+        y: 48,
         duration: 0.8,
+        ease: "power2.out",
       });
 
       gsap.from(".why", {
-        scrollTrigger: {
-          trigger: ".why",
-          scroller: "body",
-          start: "top bottom",
-          end: "top center",
-
-         
-        },
         opacity: 0,
-        y: 300,
+        y: 40,
         duration: 0.7,
-      });
-      gsap.from(".card1", {
-        scrollTrigger: {
-          trigger: ".card1",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-       
-        },
-        opacity: 0,
-        y: 300,
-        duration: 0.5,
-      });
-      gsap.from(".card2", {
-        scrollTrigger: {
-          trigger: ".card2",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-          
-        },
-        opacity: 0,
-        y: 300,
-        duration: 0.5,
-        delay: 0.3,
-      });
-      gsap.from(".card3", {
-        scrollTrigger: {
-          trigger: ".card3",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-        
-        },
-        opacity: 0,
-        y: 300,
-        duration: 0.8,
-        delay:0.6
-      });
-      gsap.from(".heading1", {
-        scrollTrigger: {
-          trigger: ".heading1",
-          scroller: "body",
-          start: "top bottom",
-          end: "top 0%",
-       
-        },
-        opacity: 0,
-        y: 200,
-        duration: 0.8,
+        delay: 0.15,
+        ease: "power2.out",
       });
 
-      gsap.from(".C1", {
-        scrollTrigger: {
-          trigger: ".C1",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-       
-        },
-        opacity: 0,
-        y: 300,
-        duration: 0.8,
-   
-      });
-      gsap.from(".C2", {
-        scrollTrigger: {
-          trigger: ".C2",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-    
-        },
-        opacity: 0,
-        y: 200,
-        duration: 0.8,
-      });
+      scrollReveal(".card1", { y: 80, duration: 0.5 });
+      scrollReveal(".card2", { y: 80, duration: 0.5, delay: 0.15 });
+      scrollReveal(".card3", { y: 80, duration: 0.5, delay: 0.3 });
+      scrollReveal(".heading1", { y: 60, duration: 0.7 });
+      scrollReveal(".C1", { y: 80, duration: 0.7 });
+      scrollReveal(".C2", { y: 60, duration: 0.7 });
+      scrollReveal(".all", { y: 80, duration: 0.7 });
+      scrollReveal(".A1", { y: 80, duration: 0.7 });
+    }, pageRef);
 
-      gsap.from(".all", {
-        scrollTrigger: {
-          trigger: ".all",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-
-        },
-        opacity: 0,
-        y: 300,
-        duration: 0.8,
-      });
-
-        gsap.from(".A1", {
-        scrollTrigger: {
-          trigger: ".A1",
-          scroller: "body",
-          start: "top 100%",
-          end: "top 0%",
-          
-        },
-        opacity: 0,
-        y: 300,
-        duration: 0.8,
-      });
-    }, "");
+    ScrollTrigger.refresh();
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <>
+    <div ref={pageRef}>
       <div className="w-full p-5 sm:p-10 lg:p-10 mb-10">
         <div className="hero bg-[url('/hero.png')] bg-cover bg-center w-full h-full flex flex-col justify-center items-start text-center text-white p-10 rounded-3xl">
           <h1 className="text-4xl mt-10 md:text-5xl text-start font-bold mb-4 lg:w-80">
@@ -155,11 +70,9 @@ const HomePage = () => {
             From daily wellness to advanced health insights, our platform is
             designed to support you.
           </h5>
-          <Link href="/doctors">
-            <button className="bg-white text-black px-6 py-3 rounded-3xl hover:cursor-pointer hover:scale-110 transition-all ease-in-out hover:bg-white hover:text-black mb-10">
-              Start Session
-            </button>
-          </Link>
+          <MarketingAuthCta className="bg-primary text-primary-foreground px-6 py-3 rounded-3xl hover:cursor-pointer hover:scale-110 transition-all ease-in-out hover:bg-primary/90 mb-10">
+            Start Session
+          </MarketingAuthCta>
         </div>
       </div>
 
@@ -175,11 +88,9 @@ const HomePage = () => {
             lifestyle.
           </h5>
 
-          <Link href="/doctors">
-            <button className="bg-gray-600 w-50 text-white rounded-3xl p-3 hover:cursor-pointer hover:scale-110 transition-all ease-in-out">
-              Get Consultation
-            </button>
-          </Link>
+          <MarketingAuthCta className="bg-gray-600 w-50 text-white rounded-3xl p-3 hover:cursor-pointer hover:scale-110 transition-all ease-in-out">
+            Get Consultation
+          </MarketingAuthCta>
         </div>
       </div>
 
@@ -357,7 +268,7 @@ const HomePage = () => {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-snug">
                 Receive tailored health tips and alerts based on your individual
                 data trends,{" "}
-                <span className="text-blue-300">
+                <span className="text-primary/80">
                   helping you make proactive adjustments
                 </span>
               </h1>
@@ -370,7 +281,7 @@ const HomePage = () => {
         
         <h1 className=" text-xl sm:text-3xl lg:text-5xl font-semibold  mb-6">
           Studies show that proactive health tracking can reduce chronic{" "}
-          <span className="text-blue-700 font-bold">
+          <span className="text-primary font-bold">
             health risks by up to 78%
           </span>
         </h1>
@@ -409,7 +320,7 @@ const HomePage = () => {
                 Studies show that proactive health tracking can reduce chronic
                 health risks by up to:
               </p>
-              <h1 className="text-4xl font-extrabold text-blue-700">78%</h1>
+              <h1 className="text-4xl font-extrabold text-primary">78%</h1>
             </div>
           </div>
         </div>
@@ -430,16 +341,14 @@ const HomePage = () => {
               data, your power.
             </p>
             <div>
-              <Link href="/doctors">
-                <button className="bg-gray-600 text-white px-6 py-3 rounded-3xl text-sm sm:text-base hover:bg-gray-900 hover:cursor-pointer hover:scale-110 transition-all ease-in-out">
+              <MarketingAuthCta className="bg-gray-600 text-white px-6 py-3 rounded-3xl text-sm sm:text-base hover:bg-gray-900 hover:cursor-pointer hover:scale-110 transition-all ease-in-out">
                 Start Session
-                </button>
-              </Link>
+              </MarketingAuthCta>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

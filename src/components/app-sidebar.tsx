@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   Sidebar,
   SidebarContent,
@@ -7,186 +7,123 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import SideBarUser from "@/components/SideBarUser";
+import { ModeToggle } from "@/components/modeToggle";
 import Image from "next/image";
-import { useContext, useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import selectedUserContext from "@/app/context/selectedUserContext";
-import trackThemeContext from "@/app/context/trackThemeContext";
-import doctorContext from "@/app/context/doctorContext";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Stethoscope,
+  FileText,
+  MessageSquare,
+  Users,
+  Calendar,
+  Settings,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthProvider";
+import { isDoctorUser } from "@/lib/auth/roles";
+import { NotificationBell } from "@/components/NotificationBell";
 
-type users = {
-  _id: string;
-  id: string;
-  clerkId: string;
-  email: string;
-  username: string;
-  photo: string;
-  image: string;
-  name: string;
-  firstName: string;
-  lastName: string;
-  __v: number;
-};
+const baseNavItems = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/chat", label: "Chat", icon: MessageSquare },
+];
 
-export function AppSidebar() {
-  const [Admin, setAdmin] = useState("");
-  const [patients, setPatients] = useState<users[]>([]);
-  const [doctors, setDoctors] = useState<users[]>([]);
-  const { user } = useUser();
-  const{setSelectedUser} = useContext(selectedUserContext)
-  const {selectedTheme} = useContext(trackThemeContext)
-  const {doctor} = useContext(doctorContext)
-  const {setDoctor} = useContext(doctorContext)
-  const fetchDoctors = async () => {
-    
-    const res = await fetch("/api/doctors");
-    const data = await res.json();
-    setDoctors(data);
-  };
-let filter = ""
-
-if (selectedTheme === "dark") {
-  filter = "invert"
-} else if (selectedTheme === "light") {
-  filter = ""
+function isNavActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-  const fetchUsers = async () => {
-    const res = await fetch("/api/users");
-    const data = await res.json();
-    setPatients(data);
-  };
+export function AppSidebar() {
+  const pathname = usePathname();
+  const { user } = useAuth();
+  const isDoctor = isDoctorUser(user);
 
-  useEffect(() => {
-    fetchUsers();
-    fetchDoctors();
-  }, []);
+  const navItems = [
+    baseNavItems[0],
+    isDoctor
+      ? { href: "/doctors", label: "Patients", icon: Users }
+      : { href: "/doctors", label: "Doctors", icon: Stethoscope },
+    { href: "/appointments", label: "Appointments", icon: Calendar },
+    ...baseNavItems.slice(1),
+    { href: "/settings", label: "Settings", icon: Settings },
+  ];
 
-  useEffect(() => {
-    if (user?.emailAddresses[0].emailAddress === "awais10015@gmail.com") {
-      setAdmin("Doctor");
-    }
-  }, [user]);
-
-  const handleChat = async (docId: string) => {
-    
-    if (!docId || !user?.id) {
-      console.error("Missing participant IDs");
-      return;
-    }
-     if (Admin === "Doctor") {
-      const participants = [doctor, docId];
-      try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ participants }),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to create or fetch chat");
-      }
-      const newChat = await res.json();
-      console.log("Chat ready:", newChat);
-    } catch (error) {
-      console.error("Chat creation failed:", error);
-    }
-    } else {
-      const participants = [docId, user?.id];
-      try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ participants }),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to create or fetch chat");
-      }
-      const newChat = await res.json();
-      console.log("Chat ready:", newChat);
-    } catch (error) {
-      console.error("Chat creation failed:", error);
-    }
-    }
-    
-  };
   return (
-    <Sidebar className="border-none">
-      <SidebarHeader>
-        <div className={`w-full h-20 flex justify-center items-center border-b-2 ${filter}`}>
-          <Image src="/logo.png" alt="logo" height={100} width={130} />
+    <Sidebar className="border-r border-sidebar-border">
+      <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="flex min-w-0 flex-1 items-center gap-3">
+            <Image
+              src="/union2.svg"
+              alt=""
+              height={40}
+              width={36}
+              className="h-10 w-9 shrink-0 object-contain"
+            />
+            <div className="min-w-0 text-left leading-tight">
+              <p className="truncate text-base font-semibold text-sidebar-foreground">
+                Healix
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                Hospital portal
+              </p>
+            </div>
+          </Link>
+          <ModeToggle buttonVariant="ghost" className="h-9 w-9" />
+          <NotificationBell />
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        {Admin === "Doctor" ? (
-          <div className="scrollbar-hide overflow-hidden">
-            {patients.map((patient) => (
-              <div
-                key={patient._id}
-                className=" flex gap-2 justify-start items-center p-4 rounded-lg shadow-sm hover:shadow-sm hover:scale-105 transition cursor-pointer"
-                onClick={() => {
-                  handleChat(patient.clerkId);
-                  console.log("patient.id", patient.clerkId)
-                  // onSelectUser(patient);
-                  setSelectedUser(patient)
-                }}
-              >
-                <Image
-                  src={patient.photo}
-                  height={40}
-                  width={40}
-                  alt="dp"
-                  className="rounded-full"
-                />
-                <p>{patient.firstName}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="scrollbar-hide overflow-hidden">
-            {doctors.map((doctor) => (
-              <div
-                key={doctor._id}
-                className="flex gap-2 justify-start items-center p-4 rounded-lg shadow-sm hover:shadow-sm hover:scale-105 transition cursor-pointer"
-                onClick={() => {
-                  handleChat(doctor.id);
-                  setDoctor(doctor.id)
-                  console.log("doctor.id", doctor.id)
-                  // onSelectUser(doctor);
-                  setSelectedUser(doctor)
-                }}
-              >
-                <Link href={`/chat?doctorId=${doctor.id}`}>
-                  <div className="flex gap-3 justify-start items-center">
-                    <Image
-                      src={doctor.image}
-                      height={40}
-                      width={40}
-                      alt="dp"
-                      className="rounded-full"
-                    />
-                    <p>{doctor.name}</p>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        )}
+
+      <SidebarContent className="px-1">
+        <SidebarGroup className="py-4">
+          <SidebarGroupLabel className="px-3 text-xs uppercase tracking-wide text-muted-foreground">
+            Main menu
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1 px-2">
+              {navItems.map(({ href, label, icon: Icon }) => {
+                const active = isNavActive(pathname, href);
+                return (
+                  <SidebarMenuItem key={label}>
+                    <SidebarMenuButton
+                      asChild
+                      size="lg"
+                      isActive={active}
+                      className={cn(
+                        active &&
+                          "bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary data-[active=true]:bg-primary/15 data-[active=true]:text-primary"
+                      )}
+                    >
+                      <Link
+                        href={href}
+                        className="flex items-center gap-3 font-medium"
+                      >
+                        <Icon
+                          className={cn(
+                            "h-[18px] w-[18px] shrink-0",
+                            active ? "opacity-100" : "opacity-70"
+                          )}
+                        />
+                        <span>{label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <SideBarUser />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+
+      <SidebarFooter className="border-t border-sidebar-border p-3">
+        <SideBarUser />
       </SidebarFooter>
     </Sidebar>
   );

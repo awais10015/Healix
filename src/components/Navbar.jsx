@@ -1,60 +1,35 @@
 "use client";
 
-import React, { useContext, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import React, { useState } from "react";
+import Image from "next/image";
 import { ModeToggle } from "./modeToggle";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
-import trackThemeContext from "@/app/context/trackThemeContext";
+import { useAuth } from "@/context/AuthProvider";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { selectedTheme } = useContext(trackThemeContext);
-  let filter = "";
-
-  if (selectedTheme === "dark") {
-    filter = "invert";
-  } else if (selectedTheme === "light") {
-    filter = "";
-  }
+  const { user, logout } = useAuth();
   return (
     <div className="h-20 w-full px-6 md:px-10 flex justify-between items-center text-md relative">
-      <div>
+      <div className="shrink-0">
         <Link href="/">
           <Image
-            className={`${filter}`}
+            className="dark:invert"
             src="/logo.svg"
             height={150}
             width={150}
-            alt="logo"
+            alt="Healix logo"
+            priority
           />
         </Link>
       </div>
 
       <div className="hidden md:flex gap-8">
         <Link
-          href="/doctors"
+          href="/"
           className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
         >
-          Consult with Doctor
-        </Link>
-        <Link
-          href="/reports"
-          className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-        >
-          Reports
-        </Link>
-        <Link
-          href="/reviews"
-          className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-        >
-          Reviews
+          Home
         </Link>
         <Link
           href="/about"
@@ -62,49 +37,53 @@ const Navbar = () => {
         >
           About
         </Link>
+        <Link
+          href="/reviews"
+          className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
+        >
+          Reviews
+        </Link>
       </div>
 
       <div className="hidden md:flex gap-4 items-center">
-        {/* <SignedOut>
-          <Link
-            href="/sign-up"
-            className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-          >
-            SignUp
-          </Link>
-          <Link
-            href="/sign-in"
-            className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-          >
-            SignIn
-          </Link>
-        </SignedOut> */}
         <ModeToggle />
-        {/* <SignedIn>
-          <Link href="/doctors">
-            <button className="bg-black text-white px-4 py-2 rounded-3xl hover:cursor-pointer hover:scale-110 transition-all ease-in-out">
-              Consult Now
-            </button>
-          </Link>
-          <UserButton />
-        </SignedIn> */}
-        <header className="flex justify-end items-center p-4 gap-4 h-16">
-          <SignedOut>
-            <SignInButton className="hover:cursor-pointer" />
-            <SignUpButton>
-              <button className="bg-[#6c47ff] hover:cursor-pointer text-ceramic-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                Sign Up
+        <header className="flex justify-end items-center gap-4">
+          {!user ? (
+            <>
+              <Link
+                href="/sign-in?redirect_url=/dashboard"
+                className="text-foreground hover:text-orange-800"
+              >
+                Sign in
+              </Link>
+              <Link href="/sign-up">
+                <button className="bg-primary hover:cursor-pointer text-primary-foreground rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer hover:bg-primary/90 transition-colors">
+                  Sign Up
+                </button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/dashboard"
+                className="hover:text-orange-800 font-medium"
+              >
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="text-sm hover:text-orange-800"
+              >
+                Log out
               </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
+            </>
+          )}
         </header>
       </div>
 
       <div className="md:hidden">
-        <button onClick={() => setMenuOpen(!menuOpen)}>
+        <button type="button" onClick={() => setMenuOpen(!menuOpen)}>
           <svg
             className="w-6 h-6"
             fill="none"
@@ -124,46 +103,23 @@ const Navbar = () => {
 
       {menuOpen && (
         <div className="absolute top-20 bg-gray-500 text-lg p-5 right-0 rounded-md  flex flex-col justify-center items-center gap-3 z-50 w-full md:hidden transition-all ease-in-out">
-          <Link
-            href="/doctors"
-            className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-          >
-            Doctor
-          </Link>
-          <Link
-            href="/reports"
-            className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-          >
-            Reports
-          </Link>
-          <Link
-            href="/reviews"
-            className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-          >
-            Reviews
-          </Link>
-          <Link
-            href="/about"
-            className="hover:text-orange-800 hover:scale-105 transition-all ease-in-out"
-          >
-            About
-          </Link>
+          <Link href="/">Home</Link>
+          <Link href="/about">About</Link>
+          <Link href="/reviews">Reviews</Link>
           <ModeToggle />
-          <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <SignedOut>
-              <div className="flex flex-col">
-              <SignInButton />
-              <SignUpButton>
-                <button className="bg-[#6c47ff] text-ceramic-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                  Sign Up
-                </button>
-              </SignUpButton>
-              </div>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
+          {!user ? (
+            <>
+              <Link href="/sign-in">Sign in</Link>
+              <Link href="/sign-up">Sign up</Link>
+            </>
+          ) : (
+            <>
+              <Link href="/dashboard">Dashboard</Link>
+              <button type="button" onClick={() => logout()}>
+                Log out
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

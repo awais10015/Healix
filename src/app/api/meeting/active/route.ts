@@ -1,16 +1,29 @@
 import { NextResponse } from "next/server";
 import Meeting from "@/models/meetingModel";
-import {connect} from "@/lib/db";
+import { connect } from "@/lib/db";
+import {
+  getChatIdentityIds,
+  requireSession,
+  chatIncludesParticipant,
+} from "@/lib/auth/require-session";
 
 export async function GET() {
-  await connect();
+  const session = await requireSession();
+  if (session instanceof NextResponse) return session;
 
-  const activeMeeting = await Meeting.find()
-  console.log("active meetings", activeMeeting)
-  if (!activeMeeting) {
-    console.log("no active meeting")
-    return NextResponse.json({ message: "No active meeting" }, { status: 404 });
+  await connect();
+  const identityIds = await getChatIdentityIds(session);
+  if (identityIds.length === 0) {
+    return NextResponse.json([]);
   }
 
-  return NextResponse.json(activeMeeting);
+  const meetings = await Meeting.find().sort({ createdAt: -1 });
+  const mine = meetings.filter((m) =>
+    chatIncludesParticipant(
+      (m.participants || []).map(String),
+      identityIds
+    )
+  );
+
+  return NextResponse.json(mine);
 }

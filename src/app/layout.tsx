@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import SelectedUserContextProvider from "@/app/context/selectedUserContextProvider";
 import TrackThemeContextProvider from "@/app/context/trackThemeContextProvider";
 import { StreamVideoProvider } from "@/providers/StreamClientProvider";
 import DoctorContextProvider from "@/app/context/doctorContextProvider";
+import { AuthProvider } from "@/context/AuthProvider";
 import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
@@ -24,9 +24,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>
+        <AuthProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -53,8 +53,8 @@ export default function RootLayout({
               </TrackThemeContextProvider>
             </DoctorContextProvider>
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

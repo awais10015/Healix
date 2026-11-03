@@ -22,6 +22,8 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
+let userIndexesReconciled = false;
+
 export const connect = async (): Promise<Mongoose> => {
   if (cached.conn) return cached.conn;
 
@@ -34,7 +36,12 @@ export const connect = async (): Promise<Mongoose> => {
   }
 
   cached.conn = await cached.promise;
-  return cached.conn;
 
- 
+  if (!userIndexesReconciled) {
+    const { reconcileUserIndexes } = await import("@/lib/reconcile-user-indexes");
+    await reconcileUserIndexes(cached.conn);
+    userIndexesReconciled = true;
+  }
+
+  return cached.conn;
 };
